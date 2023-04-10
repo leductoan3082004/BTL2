@@ -203,6 +203,36 @@ public:
     int getI() {
         return this->i;
     }
+    virtual bool fight(ArmyKnights *a) = 0;
+};
+class Monster : public BaseOpponent { // use for event numbered 1 to 5
+public:
+    bool fight(ArmyKnights *a) override {
+        BaseKnight *knight = a->lastKnight();
+        if (knight == nullptr) {
+            return false;
+        }
+
+        bool type = knight->GetKnightType();
+        int levelO = (this->getI() + this->getEventID()) % 10 + 1;
+
+        if (type == PALADIN || type == LANCELOT || levelO <= knight->getLevel()) {
+            int gil = Gil[this->getEventID() - 1];
+            for (int i = a->count(); i >= 1; --i) {
+                int current_gil = a->GetbyID(i)->getGil();
+                int update_gil = min(999, current_gil + gil);
+                int taken = update_gil - current_gil;
+                gil -= taken;
+                a->GetbyID(i)->updateGil(update_gil);
+            }
+            return 1;
+        }
+        int damage = (levelO - knight->getLevel()) * BaseDamage[this->getEventID() - 1];
+        knight->updateHP(knight->getHP() - damage);
+        if (knight->Reborn() || knight->RebornUsingGil()) {
+            return 1;
+        }
+    };
 };
 
 class BaseKnight {
@@ -217,10 +247,50 @@ protected:
 
 public:
     static BaseKnight *create(int id, int maxhp, int level, int gil, int antidote, int phoenixdownI) {
-        return nullptr;
+        return new BaseKnight(id, maxhp, level, gil, antidote, phoenixdownI);
     };
     ~BaseKnight() {
         delete bag;
+    }
+    bool Reborn() {
+        if (this->hp > 0) {
+            return 1;
+        }
+        if (this->hp <= 0 && this->getBag(PHOENIXDOWNI)) {
+            this->hp = this->maxhp;
+        } else if (this->getBag(PHOENIXDOWNII) && this->hp < this->maxhp / 4) {
+            this->hp = this->maxhp;
+        } else if (this->getBag(PHOENIXDOWNIII) && this->hp < this->maxhp / 3) {
+            if (this->hp <= 0) {
+                this->hp = this->maxhp;
+            } else {
+                this->hp += this->maxhp / 4;
+            }
+        } else if (this->getBag(PHOENIXDOWNIV) && this->hp < this->maxhp / 2) {
+            if (this->hp <= 0) {
+                this->hp = this->maxhp / 2;
+            } else {
+                this->hp += this->maxhp / 5;
+            }
+        }
+        return (this->hp > 0);
+    }
+    bool RebornUsingGil() {
+        if (this->hp > 0) {
+            return 1;
+        }
+        if (this->gil >= 100) {
+            this->gil -= 100;
+            this->hp = this->maxhp;
+            return 1;
+        }
+        return 0;
+    }
+    bool getBag(ItemType type) {
+        if (this->bag->get(type) == nullptr) {
+            return 0;
+        }
+        return 1;
     }
     void updateHP(int HP) {
         this->hp = HP;
@@ -369,6 +439,12 @@ public:
 
         cin.close();
     };
+    BaseKnight *GetbyID(int i) {
+        if (i > this->n) {
+            return nullptr;
+        }
+        return this->aKnight[i];
+    }
     void giveGilRemaining(int gil) {
         if (n <= 0) {
             return;
@@ -383,89 +459,7 @@ public:
         bool type = knight->GetKnightType();
         int levelO = (opponent->getI() + opponent->getEventID()) % 10 + 1;
 
-        if (opponent->getEventID() <= 5) {
-            if (type == PALADIN || type == LANCELOT) {
-                return 1;
-            }
-            if (levelO <= knight->getLevel()) {
-                return 1;
-            }
-            int damage = (levelO - knight->getLevel()) * BaseDamage[opponent->getEventID() - 1];
-            if (knight->updateHPandUsePhoenixI(damage)) {
-                return 1;
-            }
-            return 0;
-        }
-        if (opponent->getEventID() == 6) {
-            if (type == DRAGON) {
-                return 1;
-            }
-            if (knight->useAntidote()) {
-                return 1;
-            }
-            if (levelO > knight->getLevel()) {
-                knight->drop();
-                if (knight->updateHPandUsePhoenixI(10)) {
-                    return 1;
-                }
-                return 0;
-            }
-            knight->incLevel();
-            return 1;
-        }
-        if (opponent->getEventID() == 7) {
-            if (knight->getLevel() >= levelO) {
-                int newGil = min(knight->getGil() * 2, 999);
-                int rem = knight->getGil() * 2 - newGil;
-                knight->updateGil(newGil);
-
-                for (int i = this->count() - 1; i >= 1 && rem > 0; --i) {
-                    int gil = aKnight[i]->getGil();
-                    int take = min(rem, 999 - gil);
-                    gil += take;
-                    rem -= take;
-                    aKnight[i]->updateGil(gil);
-                }
-            } else {
-                if (knight->GetType() != PALADIN) {
-                    knight->reduceGilByHalf();
-                }
-            }
-            return 1;
-        }
-        if (opponent->getEventID() == 8) {
-            if (knight->GetType() == PALADIN) {
-                if (knight->getHP() < knight->getMaxHP() / 3) {
-                    knight->updateHP(knight->getHP() + knight->getMaxHP() / 5);
-                }
-            } else if (knight->getGil() >= 50) {
-                knight->updateGil(knight->getGil() - 50);
-                if (knight->getHP() < knight->getMaxHP() / 3) {
-                    knight->updateHP(knight->getHP() + knight->getMaxHP() / 5);
-                }
-            }
-            return 1;
-        }
-        if (opponent->getEventID() == 9) {
-            knight->updateHP(knight->getMaxHP());
-            return 1;
-        }
-        if (opponent->getEventID() == 10) {
-            if (knight->GetKnightType() == DRAGON || (knight->getHP() == knight->getMaxHP() && knight->getLevel() == 10)) {
-                knight->updateHP(999);
-                knight->updateLevel(10);
-            } else {
-                if (knight->usePhoenixDownI()) {
-                    knight->updateHP(knight->getMaxHP());
-                } else {
-                    return 0;
-                }
-            }
-            return 1;
-        }
-        if (opponent->getEventID() == 11) {
-            
-        }
+        return opponent->fight(this);
     };
 
     ~ArmyKnights() {
