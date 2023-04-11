@@ -11,10 +11,12 @@ enum ItemType {
     PHOENIXDOWNIII,
     PHOENIXDOWNIV,
 };
+ItemType ArrType[] = {ANTIDOTE, PHOENIXDOWNI, PHOENIXDOWNII, PHOENIXDOWNIII, PHOENIXDOWNIV};
 enum KnightType { PALADIN = 0,
                   LANCELOT,
                   DRAGON,
                   NORMAL };
+double knightBaseDamge[] = {0, 0.05, 0.06, 0.075};
 
 string Convert(int x) {
     string ans = "";
@@ -81,7 +83,7 @@ public:
 };
 // ---------------------------------------------------------------------------------------------//
 
-const string medicine[] = {"Antidote", "PhoenixDownI", "PhoenixDownII", "PhoenixDownIII", "PhoenixDownIV"};
+const string medicine[] = {"Antidote", "PhoenixI", "PhoenixII", "PhoenixIII", "PhoenixIV"};
 
 class BaseBag {
 
@@ -218,10 +220,22 @@ public:
                 break;
             }
         }
+        // if (itemType == ANTIDOTE) {
+        //     for (int i = 0; i < cnt; ++i) {
+        //         cerr << arr[i] << ' ';
+        //     }
+        //     cerr << '\n';
+        // }
+
         if (id == -1) {
+            this->n = 0;
+            for (int i = cnt - 1; i >= 0; --i) {
+                this->insertFirst(new BaseItem(arr[i]));
+            }
             return nullptr;
         }
         swap(arr[0], arr[id]);
+
         this->n = 0;
         for (int i = cnt - 1; i >= 1; --i) {
             this->insertFirst(new BaseItem(arr[i]));
@@ -238,7 +252,7 @@ public:
     }
     string toString() const override {
         Node *ptr = head;
-        string ans = "Bag[count=" + Convert(n) + ";";
+        string ans = "Bag[count=" + to_string(this->n) + ";";
         while (ptr != nullptr) {
             ans += medicine[ptr->item->GetType()];
             ptr = ptr->next;
@@ -276,6 +290,9 @@ public:
         this->hp = min(this->hp, this->maxhp);
         return this->hp > 0;
     }
+    void insertFirst(ItemType type) {
+        this->bag->insertFirst(new BaseItem(type));
+    }
     bool RebornUsingGil() {
         if (this->hp > 0) {
             return 1;
@@ -299,9 +316,11 @@ public:
     }
     void updateLevel(int level) {
         this->level = level;
+        this->level = min(this->level, 10);
     }
     void updateGil(int gil) {
         this->gil = gil;
+        this->gil = min(this->gil, 999);
     }
     void reduceGilByHalf() {
         this->gil /= 2;
@@ -311,6 +330,7 @@ public:
     }
     void incLevel() {
         this->level++;
+        this->level = min(this->level, 10);
     }
     void drop() {
         this->bag->Drop();
@@ -347,9 +367,6 @@ public:
     int getLevel() {
         return this->level;
     }
-    int GetKnightType() {
-        return this->knightType;
-    };
     BaseKnight(int id, int maxhp, int level, int gil, int antidote, int phoenixdownI) {
         this->id = id;
         this->hp = maxhp;
@@ -455,7 +472,7 @@ public:
 
         for (int i = 1; i <= this->n; ++i) {
             int hp, level, gil, antidote, phoenixdowni;
-            cin >> hp >> level >> gil >> antidote >> phoenixdowni;
+            cin >> hp >> level >> phoenixdowni >> gil >> antidote;
             this->aKnight[i] = new BaseKnight(i, hp, level, gil, antidote, phoenixdowni);
         }
 
@@ -478,12 +495,16 @@ public:
             return false;
         }
 
-        bool type = knight->GetKnightType();
+        int type = knight->GetType();
         int levelO = (opponent->getI() + opponent->getEventID()) % 10 + 1;
 
         if (knight == nullptr) {
             return false;
         }
+
+        // if (opponent->getI() == 9) {
+        //     cerr << type << endl;
+        // }
 
         if (opponent->getEventID() <= 5) {
             if (type == PALADIN || type == LANCELOT || levelO <= knight->getLevel()) {
@@ -498,13 +519,18 @@ public:
                 return 1;
             }
             int damage = (levelO - knight->getLevel()) * BaseDamage[opponent->getEventID() - 1];
+
             knight->updateHP(knight->getHP() - damage);
+            // if (opponent->getI() == 5) {
+            //     cerr << damage << endl;
+            // }
             if (knight->Reborn() || knight->RebornUsingGil()) {
                 return 1;
             }
         }
 
         if (opponent->getEventID() == 6) {
+
             if (type == DRAGON) {
                 return 1;
             }
@@ -512,6 +538,7 @@ public:
                 return 1;
             }
             if (levelO > knight->getLevel()) {
+
                 knight->drop();
                 knight->updateHP(knight->getHP() - 10);
                 return knight->Reborn() || knight->RebornUsingGil();
@@ -559,7 +586,7 @@ public:
             return 1;
         }
         if (opponent->getEventID() == 10) {
-            if (knight->GetKnightType() == DRAGON || (knight->getHP() == knight->getMaxHP() && knight->getLevel() == 10)) {
+            if (knight->GetType() == DRAGON || (knight->getHP() == knight->getMaxHP() && knight->getLevel() == 10)) {
                 knight->updateGil(999);
                 knight->updateLevel(10);
             } else {
@@ -569,7 +596,7 @@ public:
             return 1;
         }
         if (opponent->getEventID() == 11) {
-            if ((knight->GetKnightType() == PALADIN && knight->getLevel() >= 8) || (knight->getLevel() >= 10)) {
+            if ((knight->GetType() == PALADIN && knight->getLevel() >= 8) || (knight->getLevel() >= 10)) {
                 this->takeShield();
             } else {
                 knight->updateHP(0);
@@ -595,13 +622,59 @@ public:
             }
             return 1;
         }
+        if (opponent->getEventID() >= 112 && opponent->getEventID() <= 114) {
+            knight->insertFirst(ArrType[opponent->getEventID() - 110]);
+            return 1;
+        }
+        if (opponent->getEventID() == 99) {
+            if (this->hasExcaliburSword()) {
+                return 1;
+            }
+            if (!(this->hasGuinevereHair() && this->hasLancelotSpear() && this->hasPaladinShield())) {
+                return 0;
+            }
+            bool del[n + 4];
+            for (int i = 0; i < n + 4; ++i) {
+                del[i] = 0;
+            }
+            int OriginalHP = 5000;
+
+            for (int i = this->n; i >= 1; --i) {
+                if (this->aKnight[i]->GetType() == NORMAL) {
+                    continue;
+                }
+                BaseKnight *k = this->aKnight[i];
+                int damage = knightBaseDamge[k->GetType()] * k->getHP() * k->getLevel();
+                OriginalHP -= damage;
+                if (OriginalHP > 0) {
+                    del[i] = 1;
+                }
+            }
+
+            if (OriginalHP > 0) {
+                this->n = 0;
+                return 0;
+            }
+
+            int pre_n = this->n;
+            this->n = 0;
+            for (int i = 1; i <= pre_n; ++i) {
+                if (del[i]) {
+                    continue;
+                }
+                aKnight[++this->n] = aKnight[i];
+            }
+            return 1;
+        }
         return 0;
     };
 
     bool PopOut() {
         if (this->n > 0) {
             this->n--;
+            return 1;
         }
+        return 0;
     }
 
     ~ArmyKnights() {
@@ -692,6 +765,7 @@ public:
                 if (omega == 0) {
                     omega = 1;
                 } else {
+                    armyKnights->printInfo();
                     continue;
                 }
             }
@@ -699,10 +773,11 @@ public:
                 if (hades == 0) {
                     hades = 1;
                 } else {
+                    armyKnights->printInfo();
                     continue;
                 }
             }
-            BaseOpponent *opponent = new BaseOpponent(id, i);
+            BaseOpponent *opponent = new BaseOpponent(id, i - 1);
             while (armyKnights->fight(opponent) == 0 && armyKnights->count() > 0) {
                 armyKnights->PopOut();
             }
