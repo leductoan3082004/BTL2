@@ -272,7 +272,9 @@ public:
         delete bag;
     }
     bool Reborn() {
-        return 1;
+        bag->GoFind(this->hp, this->maxhp);
+        this->hp = min(this->hp, this->maxhp);
+        return this->hp > 0;
     }
     bool RebornUsingGil() {
         if (this->hp > 0) {
@@ -593,7 +595,14 @@ public:
             }
             return 1;
         }
+        return 0;
     };
+
+    bool PopOut() {
+        if (this->n > 0) {
+            this->n--;
+        }
+    }
 
     ~ArmyKnights() {
         delete aKnight;
@@ -675,12 +684,31 @@ public:
     };
     void run() {
         int n = events->count();
+        bool hades = 0, omega = 0;
         for (int i = 1; i <= n; ++i) {
             int id = events->get(i);
-            if (id <= 5) {
-                BaseOpponent *opponent = new BaseOpponent(id, i);
+
+            if (id == 10) {
+                if (omega == 0) {
+                    omega = 1;
+                } else {
+                    continue;
+                }
             }
+            if (id == 11) {
+                if (hades == 0) {
+                    hades = 1;
+                } else {
+                    continue;
+                }
+            }
+            BaseOpponent *opponent = new BaseOpponent(id, i);
+            while (armyKnights->fight(opponent) == 0 && armyKnights->count() > 0) {
+                armyKnights->PopOut();
+            }
+            armyKnights->printInfo();
         }
+        armyKnights->printResult(armyKnights->count() > 0 ? 1 : 0);
     };
 };
 

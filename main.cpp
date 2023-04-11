@@ -13,25 +13,25 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    // CustomBag *bag = new CustomBag(1, 1, 10);
-    // bag->insertFirst(new BaseItem(PHOENIXDOWNIII));
-    // bag->insertFirst(new BaseItem(PHOENIXDOWNII));
-    // bag->insertFirst(new BaseItem(PHOENIXDOWNIV));
+    CustomBag *bag = new CustomBag(1, 1, 10);
+    bag->insertFirst(new BaseItem(PHOENIXDOWNIII));
+    bag->insertFirst(new BaseItem(PHOENIXDOWNII));
+    bag->insertFirst(new BaseItem(PHOENIXDOWNIV));
 
-    // cout << bag->toString() << endl;
-    // int hp = 450, maxhp = 999;
-    // bag->GoFind(hp, maxhp);
-    // cout << bag->toString();
-    // cout << endl;
-    // cout << hp << ' ' << maxhp << endl;
+    cout << bag->toString() << endl;
+    int hp = 0, maxhp = 999;
+    bag->GoFind(hp, maxhp);
+    cout << bag->toString();
+    cout << endl;
+    cout << hp << ' ' << maxhp << endl;
 
-    // delete bag;
-    KnightAdventure *knightAdventure = new KnightAdventure();
-    knightAdventure->loadArmyKnights(file_armyknights);
-    knightAdventure->loadEvents(file_events);
-    knightAdventure->run();
+    delete bag;
+    // KnightAdventure *knightAdventure = new KnightAdventure();
+    // knightAdventure->loadArmyKnights(file_armyknights);
+    // knightAdventure->loadEvents(file_events);
+    // knightAdventure->run();
 
-    delete knightAdventure;
+    // delete knightAdventure;
 
     return 0;
 }
