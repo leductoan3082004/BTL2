@@ -220,13 +220,6 @@ public:
                 break;
             }
         }
-        // if (itemType == ANTIDOTE) {
-        //     for (int i = 0; i < cnt; ++i) {
-        //         cerr << arr[i] << ' ';
-        //     }
-        //     cerr << '\n';
-        // }
-
         if (id == -1) {
             this->n = 0;
             for (int i = cnt - 1; i >= 0; --i) {
@@ -239,7 +232,6 @@ public:
         this->n = 0;
         for (int i = cnt - 1; i >= 1; --i) {
             this->insertFirst(new BaseItem(arr[i]));
-            // cout << "INSERT";
         }
         return new BaseItem(itemType);
     };
@@ -290,8 +282,8 @@ public:
         this->hp = min(this->hp, this->maxhp);
         return this->hp > 0;
     }
-    void insertFirst(ItemType type) {
-        this->bag->insertFirst(new BaseItem(type));
+    bool insertFirst(ItemType type) {
+        return this->bag->insertFirst(new BaseItem(type));
     }
     bool RebornUsingGil() {
         if (this->hp > 0) {
@@ -502,10 +494,6 @@ public:
             return false;
         }
 
-        // if (opponent->getI() == 9) {
-        //     cerr << type << endl;
-        // }
-
         if (opponent->getEventID() <= 5) {
             if (type == PALADIN || type == LANCELOT || levelO <= knight->getLevel()) {
                 int gil = Gil[opponent->getEventID() - 1];
@@ -623,7 +611,11 @@ public:
             return 1;
         }
         if (opponent->getEventID() >= 112 && opponent->getEventID() <= 114) {
-            knight->insertFirst(ArrType[opponent->getEventID() - 110]);
+            for (int i = this->count(); i >= 1; --i) {
+                if (this->aKnight[i]->insertFirst(ArrType[opponent->getEventID() - 110])) {
+                    break;
+                }
+            }
             return 1;
         }
         if (opponent->getEventID() == 99) {
