@@ -50,6 +50,11 @@ bool checkDragon(int x) {
     if (cnt < 3) {
         return 0;
     }
+    for (int i = 0; i < 3; ++i) {
+        if (arr[i] == 0) {
+            return 0;
+        }
+    }
     if (SQR(arr[0]) + SQR(arr[1]) == SQR(arr[2])) {
         return 1;
     }
