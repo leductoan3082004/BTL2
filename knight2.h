@@ -524,17 +524,19 @@ public:
         if (opponent->getEventID() == 6) {
 
             if (type == DRAGON) {
+                knight->incLevel();
                 return 1;
             }
-            if (knight->useAntidote()) {
-                return 1;
-            }
-            if (levelO > knight->getLevel()) {
 
+            if (levelO > knight->getLevel()) {
+                if (knight->useAntidote()) {
+                    return 1;
+                }
                 knight->drop();
                 knight->updateHP(knight->getHP() - 10);
                 return knight->Reborn() || knight->RebornUsingGil();
             }
+
             knight->incLevel();
             return 1;
         }
