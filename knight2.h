@@ -179,6 +179,7 @@ public:
                     swap(arr[i], arr[l]);
                     l++;
                 }
+                break;
             }
         }
         this->n = 0;
@@ -291,7 +292,7 @@ public:
         }
         if (this->gil >= 100) {
             this->gil -= 100;
-            this->hp = this->maxhp;
+            this->hp = this->maxhp / 2;
             return 1;
         }
         return 0;
@@ -371,7 +372,6 @@ public:
         if (checkPaladin(maxhp)) {
             maxItem = 1e9;
         }
-        this->bag = new CustomBag(phoenixdownI, antidote, maxItem);
         if (checkDragon(maxhp)) {
             this->knightType = DRAGON;
         } else if (checkLancelot(maxhp)) {
@@ -381,6 +381,10 @@ public:
         } else {
             this->knightType = NORMAL;
         }
+        if (this->knightType == DRAGON) {
+            antidote = 0;
+        }
+        this->bag = new CustomBag(phoenixdownI, antidote, maxItem);
     };
 
     int GetType() {
@@ -445,7 +449,7 @@ public:
 
 class ArmyKnights {
 private:
-    bool shield = 0, spear = 0, hair = 0, sword = 0;
+    bool shield = 0, spear = 0, hair = 0, sword = 0, metHades = 0, metomega = 0;
     int n = 0;
     int maxn = 0;
     BaseKnight **aKnight = nullptr;
@@ -574,7 +578,11 @@ public:
             return 1;
         }
         if (opponent->getEventID() == 10) {
+            if (this->metomega) {
+                return 1;
+            }
             if (knight->GetType() == DRAGON || (knight->getHP() == knight->getMaxHP() && knight->getLevel() == 10)) {
+                this->metomega = 1;
                 knight->updateGil(999);
                 knight->updateLevel(10);
             } else {
@@ -584,8 +592,12 @@ public:
             return 1;
         }
         if (opponent->getEventID() == 11) {
+            if (this->metHades) {
+                return 1;
+            }
             if ((knight->GetType() == PALADIN && knight->getLevel() >= 8) || (knight->getLevel() >= 10)) {
                 this->takeShield();
+                this->metHades = 1;
             } else {
                 knight->updateHP(0);
                 return knight->Reborn() || knight->RebornUsingGil();
@@ -749,26 +761,9 @@ public:
     };
     void run() {
         int n = events->count();
-        bool hades = 0, omega = 0;
         for (int i = 1; i <= n; ++i) {
             int id = events->get(i);
 
-            if (id == 10) {
-                if (omega == 0) {
-                    omega = 1;
-                } else {
-                    armyKnights->printInfo();
-                    continue;
-                }
-            }
-            if (id == 11) {
-                if (hades == 0) {
-                    hades = 1;
-                } else {
-                    armyKnights->printInfo();
-                    continue;
-                }
-            }
             BaseOpponent *opponent = new BaseOpponent(id, i - 1);
             while (armyKnights->fight(opponent) == 0 && armyKnights->count() > 0) {
                 armyKnights->PopOut();
