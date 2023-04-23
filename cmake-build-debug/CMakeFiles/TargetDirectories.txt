@@ -1,0 +1,3 @@
+E:/code/A2_initial/cmake-build-debug/CMakeFiles/A2_initial.dir
+E:/code/A2_initial/cmake-build-debug/CMakeFiles/edit_cache.dir
+E:/code/A2_initial/cmake-build-debug/CMakeFiles/rebuild_cache.dir

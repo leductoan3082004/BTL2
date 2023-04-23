@@ -298,7 +298,7 @@ public:
         if (this->gil >= 100) {
             this->gil -= 100;
             this->hp = this->maxhp / 2;
-            return 1;
+            return this->hp > 0;
         }
         return 0;
     }
@@ -573,8 +573,8 @@ public:
                     knight->updateHP(knight->getHP() + knight->getMaxHP() / 5);
                 }
             } else if (knight->getGil() >= 50) {
-                knight->updateGil(knight->getGil() - 50);
                 if (knight->getHP() < knight->getMaxHP() / 3) {
+                    knight->updateGil(knight->getGil() - 50);
                     knight->updateHP(knight->getHP() + knight->getMaxHP() / 5);
                 }
             }
@@ -767,6 +767,7 @@ public:
         this->events = new Events(file_event);
     };
     void run() {
+//        freopen("toan.out", "w", stdout);
         int n = events->count();
         for (int i = 1; i <= n; ++i) {
             int id = events->get(i);
@@ -776,6 +777,9 @@ public:
                 armyKnights->PopOut();
             }
             armyKnights->printInfo();
+            if (armyKnights->count() == 0) {
+                break;
+            }
         }
         armyKnights->printResult(armyKnights->count() > 0 ? 1 : 0);
     };
