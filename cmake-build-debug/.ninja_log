@@ -1,0 +1,5 @@
+# ninja log v5
+34	524	7048969902010022	build.ninja	7bf06a51993748a4
+0	502	7048969906573830	CMakeFiles/A2_initial.dir/knight2.cpp.obj	d0f1939715d95e57
+11	1236	7048969914690612	CMakeFiles/A2_initial.dir/main.cpp.obj	c4a77b96a30d93b1
+16	2715	7048969929458630	CMakeFiles/A2_initial.dir/test.cpp.obj	aaf29f5bbae7472

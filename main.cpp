@@ -12,7 +12,6 @@ int main(int argc, char **argv) {
         cout << "Error number of arguments" << endl;
         exit(1);
     }
-
     freopen("sol.out", "w", stdout);
     // CustomBag *bag = new CustomBag(1, 1, 10);
     // bag->insertFirst(new BaseItem(PHOENIXDOWNIII));

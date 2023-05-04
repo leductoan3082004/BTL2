@@ -16,7 +16,7 @@ enum KnightType { PALADIN = 0,
                   LANCELOT,
                   DRAGON,
                   NORMAL };
-double knightBaseDamge[] = {0, 0.05, 0.06, 0.075};
+double knightBaseDamge[] = {0.05, 0.06, 0.075};
 
 string Convert(int x) {
     string ans = "";
@@ -655,13 +655,14 @@ public:
                     continue;
                 }
                 BaseKnight *k = this->aKnight[i];
-                int damage = knightBaseDamge[k->GetType()] * k->getHP() * k->getLevel();
+                int damage = 1.00 * knightBaseDamge[k->GetType()] * k->getHP() * k->getLevel();
                 OriginalHP -= damage;
                 if (OriginalHP > 0) {
                     del[i] = 1;
+                } else {
+                    break;
                 }
             }
-
             if (OriginalHP > 0) {
                 this->n = 0;
                 return 0;
@@ -767,11 +768,9 @@ public:
         this->events = new Events(file_event);
     };
     void run() {
-//        freopen("toan.out", "w", stdout);
         int n = events->count();
         for (int i = 1; i <= n; ++i) {
             int id = events->get(i);
-
             BaseOpponent *opponent = new BaseOpponent(id, i - 1);
             while (armyKnights->fight(opponent) == 0 && armyKnights->count() > 0) {
                 armyKnights->PopOut();
