@@ -4,5 +4,6 @@
         "new": "cpp",
         "charconv": "cpp",
         "ostream": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }
